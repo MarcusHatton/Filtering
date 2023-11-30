@@ -12,9 +12,19 @@ from MicroModels import *
 from MesoModels import *
 from Visualization import *
 from Analysis import *
+import sys
+import json
 
 if __name__ == '__main__':
-    
+
+    print(f"Arguments count: {len(sys.argv)}")
+    for i, arg in enumerate(sys.argv):
+        print(f"Argument {i:>6}: {arg}")
+
+    HDF5_Directory = str(sys.argv[1])
+    comm_line_dom_vars = json.loads(sys.argv[2])
+    comm_line_filtering_ranges = json.loads(sys.argv[3])
+
     # Pickling Options
     LoadMicroModelFromPickleFile = False
     MicroModelPickleLoadFile = 'IdealHydro2D.pickle'
@@ -28,17 +38,15 @@ if __name__ == '__main__':
     DumpMesoModelToPickleFile = True
     MesoModelPickleDumpFile = 'NonIdealHydro2D.pickle'
     
-    t_slice_plotting = 10.0
-    x_range_plotting = [-0.2,0.2]
-    y_range_plotting = [-0.3,0.3]
-    
     # Start timing    
     CPU_start_time = time.process_time()
 
     # Read in data from file
-    HDF5_Directory = './Data/Testing/20x40/'
-    FileReader = METHOD_HDF5(HDF5_Directory)
-    # FileReader = METHOD_HDF5('../../Filtering/Data/KH/Ideal/t_998_1002/')
+    #HDF5_Directory = '../../../../../scratch/mjh1n20/Filtering_Data/KH/Ideal/t_49_50/2em1_1em1_1/'
+    HDF5_Directory = '../../../../../scratch/mjh1n20/Filtering_Data/KH/Testing/'
+    #HDF5_Directory = '../../../METHOD_Marcus/Examples/IS_CE/KH2D_speedtesting/2d/Filtering/'
+    FileReader = METHOD_HDF5(HDF5_Directory, comm_line_dom_vars)
+    #FileReader = METHOD_HDF5('../../Filtering/Data/KH/Ideal/t_998_1002/')
 
     # Create and setup micromodel
     if LoadMicroModelFromPickleFile:
@@ -55,23 +63,34 @@ if __name__ == '__main__':
 
     # Create visualizer for plotting micro data
     visualizer = Plotter_2D()
-    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+
+    t_range = comm_line_filtering_ranges["t_range"]
+    x_range = comm_line_filtering_ranges["x_range"]
+    y_range = comm_line_filtering_ranges["y_range"]
+    n_txy_pts = comm_line_filtering_ranges["n_txy_pts"]
+
+    t_to_plot = t_range[0]
+    x_range_plotting = x_range
+    y_range_plotting = y_range
+
+    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                           interp_dims=(20,40), method='raw_data', components_indices=[(),(),()])
-    visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    visualizer.plot_vars(micro_model, ['BC'], t=t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                           interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
 
-    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                           interp_dims=(20,40), method='interpolate', components_indices=[(),(),()])
-    visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    visualizer.plot_vars(micro_model, ['BC'], t=t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                           interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
 
     # Create the observer-finder and filter
     ObsFinder = FindObs_drift_root(micro_model,box_len=0.001)
-    Filter = spatial_box_filter(micro_model,filter_width=0.001)
+    Filter = spatial_box_filter(micro_model,filter_width=0.002)
     
     CPU_start_time = time.process_time()
-    coord_range = [[10.000,10.005],x_range_plotting, y_range_plotting]
-    num_points = [2,10,20]
+    coord_ranges = [t_range,x_range,y_range]
+    #coord_range = [[49.45,49.55],x_range_plotting, y_range_plotting]
+    #num_points = [2,10,20]
     # spacing = 2
 
     # Create MesoModel and find special observers
@@ -80,7 +99,7 @@ if __name__ == '__main__':
             meso_model = pickle.load(filehandle) 
     else:
         meso_model = NonIdealHydro2D(micro_model, ObsFinder, Filter)
-        meso_model.find_observers(num_points, coord_range)
+        meso_model.find_observers(n_txy_pts, coord_ranges)
         meso_model.setup_variables()
         meso_model.filter_micro_variables()
         meso_model.calculate_dissipative_coefficients()
