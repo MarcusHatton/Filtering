@@ -10,7 +10,7 @@ import numpy as np
 
 class METHOD_HDF5(object):
 
-    def __init__(self, directory):
+    def __init__(self, directory, comm_line_dom_vars=None):
         """
         Set up the list of files (from hdf5) and dictionary with dataset names
         in the hdf5 file. 
@@ -19,6 +19,7 @@ class METHOD_HDF5(object):
         directory: string 
             the filenames in the directory have to be incremental (sorted is used)
         """
+        self.comm_line_dom_vars = comm_line_dom_vars
 
         hdf5_filenames = sorted( glob.glob(directory+str('*.hdf5')))
         self.hdf5_files = []
@@ -46,7 +47,7 @@ class METHOD_HDF5(object):
                 for counter in range(self.num_files):
                     micro_model.prim_vars[prim_var_str].append( self.hdf5_files[counter]["Primitive/"+prim_var_str][:] )
                     # The [:] is for returning the arrays not the dataset
-                micro_model.prim_vars[prim_var_str]  = np.array(micro_model.prim_vars[prim_var_str])
+                micro_model.prim_vars[prim_var_str]  = np.array(micro_model.prim_vars[prim_var_str],dtype=float)
             except KeyError:
                 print(f'{prim_var_str} is not in the hdf5 dataset: check Primitive/')
         
@@ -55,7 +56,7 @@ class METHOD_HDF5(object):
             try: 
                 for counter in range(self.num_files):
                     micro_model.aux_vars[aux_var_str].append( self.hdf5_files[counter]["Auxiliary/"+aux_var_str][:] )
-                micro_model.aux_vars[aux_var_str] = np.array(micro_model.aux_vars[aux_var_str])
+                micro_model.aux_vars[aux_var_str] = np.array(micro_model.aux_vars[aux_var_str], dtype=float)
             except KeyError:
                 print(f'{aux_var_str} is not in the hdf5 dataset: check Auxiliary/')
  
@@ -66,17 +67,29 @@ class METHOD_HDF5(object):
                     pass
                 else: 
                     micro_model.domain_vars[dom_var_str] = int( self.hdf5_files[0]['Domain/' + dom_var_str][:])
-            except KeyError: 
-                print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/')
+            except KeyError:
+                print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/.')
+                print(f'Seaching command-line dictionary of domain variables for {dom_var_str}.')
+                try:
+                    micro_model.domain_vars[dom_var_str] = int(self.comm_line_dom_vars[dom_var_str])
+                    print('Found!\n')
+                except KeyError:
+                    print(f'{dom_var_str} is not in the command-line dictionary either.\n')
 
-        for dom_var_str in micro_model.domain_float_strs: 
+        for dom_var_str in micro_model.domain_float_strs:
             try: 
-                if dom_var_str in ['tmin', 'tmax']: 
+                if dom_var_str in ['tmin', 'tmax']:
                     pass
                 else: 
                     micro_model.domain_vars[dom_var_str] = float( self.hdf5_files[0]['Domain/' + dom_var_str][:])
             except KeyError: 
                 print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/')
+                print(f'Seaching command-line dictionary of domain variables for {dom_var_str}.')
+                try:
+                    micro_model.domain_vars[dom_var_str] = float(self.comm_line_dom_vars[dom_var_str])
+                    print('Found!\n')
+                except KeyError:
+                    print(f'{dom_var_str} is not in the command-line dictionary either.\n')
 
         for dom_var_str in micro_model.domain_array_strs: 
             try: 
@@ -86,6 +99,7 @@ class METHOD_HDF5(object):
                     micro_model.domain_vars[dom_var_str] = self.hdf5_files[0]['Domain/' + dom_var_str][:]
             except KeyError: 
                 print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/')
+                print(f'Will try to calculate it from other domain vars.\n')
 
         # for dom_var_str in micro_model.domain_vars:
         #     try: 
