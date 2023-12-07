@@ -277,7 +277,7 @@ class IdealHydro_2D(object):
             self.aux_vars[str] = []
 
         #Dictionary for structures
-        self.structures_strs = ("BC","SET")
+        self.structures_strs = ("BC","SET","s")
         self.structures = dict.fromkeys(self.structures_strs)
         for str in self.structures_strs:
             self.structures[str] = []
@@ -315,6 +315,7 @@ class IdealHydro_2D(object):
         """
         self.structures["BC"] = np.zeros((self.domain_vars['nt'],self.domain_vars['nx'],self.domain_vars['ny'],3))
         self.structures["SET"] = np.zeros((self.domain_vars['nt'],self.domain_vars['nx'],self.domain_vars['ny'],3,3))
+        self.structures["s"] = np.zeros((self.domain_vars['nt'],self.domain_vars['nx'],self.domain_vars['ny']))
 
         for h in range(self.domain_vars['nt']):
             for i in range(self.domain_vars['nx']):
@@ -326,6 +327,9 @@ class IdealHydro_2D(object):
 
                     self.structures["SET"][h,i,j,:,:] = (self.prim_vars["rho"][h,i,j] + self.prim_vars["p"][h,i,j]) * \
                                                     np.outer(vel,vel) + self.prim_vars["p"][h,i,j] * self.metric
+                    
+                    self.structures['s'][h,i,j] = \
+                        ( self.prim_vars["rho"][h,i,j] + self.prim_vars["p"][h,i,j] ) / self.aux_vars["T"][h,i,j]
 
         self.vars = self.prim_vars
         self.vars.update(self.aux_vars)

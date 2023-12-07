@@ -16,16 +16,16 @@ from Analysis import *
 if __name__ == '__main__':
     
     # Pickling Options
-    LoadMicroModelFromPickleFile = False
+    LoadMicroModelFromPickleFile = True
     MicroModelPickleLoadFile = 'IdealHydro2D.pickle'
 
-    DumpMicroModelToPickleFile = True
+    DumpMicroModelToPickleFile = False
     MicroModelPickleDumpFile = 'IdealHydro2D.pickle'
 
-    LoadMesoModelFromPickleFile = False
+    LoadMesoModelFromPickleFile = True
     MesoModelPickleLoadFile = 'NonIdealHydro2D.pickle'
     
-    DumpMesoModelToPickleFile = True
+    DumpMesoModelToPickleFile = False
     MesoModelPickleDumpFile = 'NonIdealHydro2D.pickle'
     
     t_slice_plotting = 10.0
@@ -55,15 +55,38 @@ if __name__ == '__main__':
 
     # Create visualizer for plotting micro data
     visualizer = Plotter_2D()
-    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                          interp_dims=(20,40), method='raw_data', components_indices=[(),(),()])
-    visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                          interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
+    # visualizer.plot_vars(micro_model, ['v1'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()], save_fig=True, save_dir='Output/v1.pdf')
 
-    visualizer.plot_vars(micro_model, ['v1','v2','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                          interp_dims=(20,40), method='interpolate', components_indices=[(),(),()])
-    visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                          interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
+    # visualizer.plot_vars(micro_model, ['v2'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()])
+
+    # visualizer.plot_vars(micro_model, ['n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()])        
+
+    # visualizer.plot_vars(micro_model, ['T'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()])   
+
+    # visualizer.plot_vars(micro_model, ['p'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()])   
+
+    # visualizer.plot_vars(micro_model, ['rho'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='raw_data', components_indices=[()])   
+
+    visualizer.plot_vars(micro_model, ['p','rho','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/p_rho_n.pdf')         
+    visualizer.plot_vars(micro_model, ['W','v1','v2'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/W_v1_v2.pdf')  
+    visualizer.plot_vars(micro_model, ['T','s','h'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/T_s_h.pdf')  
+
+        # visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
+
+    # visualizer.plot_vars(micro_model, ['v1','v2','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='interpolate', components_indices=[(),(),()])
+    # visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                       interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
 
     # Create the observer-finder and filter
     ObsFinder = FindObs_drift_root(micro_model,box_len=0.001)
@@ -102,51 +125,54 @@ if __name__ == '__main__':
             pickle.dump(meso_model, filehandle) 
 
     # Plot MesoModel variables
-    visualizer.plot_vars(meso_model, ['U'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
+    # visualizer.plot_vars(meso_model, ['U'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
             
     # visualizer.plot_var_model_comparison([micro_model, meso_model], 'SET', \
     #                                       t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
     #                   interp_dims=(20,40), method='raw_data', component_indices=(1,2))
 
-    visualizer.plot_vars(meso_model, ['U'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
+    # visualizer.plot_vars(meso_model, ['U'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
             
-    visualizer.plot_var_model_comparison([micro_model, meso_model], 'SET', \
-                                          t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='interpolate', component_indices=(1,2))
+    # visualizer.plot_var_model_comparison([micro_model, meso_model], 'SET', \
+    #                                       t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='interpolate', component_indices=(1,2))
         
     # Analyse coefficients of the MesoModel
     analyzer = CoefficientAnalysis(visualizer)
     # Zeta
-    visualizer.plot_vars(meso_model, ['Zeta'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[()])
+    # visualizer.plot_vars(meso_model, ['Zeta'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[()])
         
-    analyzer.DistributionPlot(meso_model, 'Zeta', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', component_indices=())
+    # analyzer.DistributionPlot(meso_model, 'Zeta', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', component_indices=())
 
-    analyzer.JointPlot(meso_model, 'Zeta', 'U', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(0,))
+    # analyzer.JointPlot(meso_model, 'Zeta', 'U', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(0,))
 
-    # Kappa    
-    visualizer.plot_vars(meso_model, ['Kappa'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(2,)])
+    # # Kappa    
+    # visualizer.plot_vars(meso_model, ['Kappa'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(2,)])
         
-    analyzer.DistributionPlot(meso_model, 'Kappa', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                  interp_dims=(20,40), method='raw_data', component_indices=(2,))
+    # analyzer.DistributionPlot(meso_model, 'Kappa', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #               interp_dims=(20,40), method='raw_data', component_indices=(2,))
 
-    analyzer.JointPlot(meso_model, 'Kappa', 'T~', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', y_component_indices=(2,), x_component_indices=())
+    # analyzer.JointPlot(meso_model, 'Kappa', 'T~', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', y_component_indices=(2,), x_component_indices=())
 
     # Eta
     visualizer.plot_vars(meso_model, ['Eta'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(1,2)])
+                      interp_dims=(20,40), method='raw_data', components_indices=[(1,2)], save_fig=True, save_dir='Output/eta.pdf')
         
     analyzer.DistributionPlot(meso_model, 'Eta', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', component_indices=(1,2))
+                      interp_dims=(20,40), method='raw_data', component_indices=(1,2), clip=True)
 
-    analyzer.JointPlot(meso_model, 'Eta', 'U', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(0,))
+    # analyzer.JointPlot(meso_model, 'Eta', 'U', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(0,))
+
+    analyzer.JointPlot(meso_model, micro_model, 'Eta', 's', t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+                      interp_dims=(20,40), method='interpolate', y_component_indices=(1,2), x_component_indices=(), clip=True)
         
     print(f'Total elapsed CPU time for finding is {time.process_time() - CPU_start_time}.')
     

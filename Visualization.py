@@ -105,7 +105,8 @@ class Plotter_2D(object):
     
     
     def plot_vars(self, model, var_strs, t, x_range, y_range, interp_dims=(), \
-                  method='interpolate', components_indices=None):
+                  method='interpolate', components_indices=None, save_fig=False,
+                  save_dir=''):
         """
         Plot variable(s) from model, defined by var_strs, over coordinates 
         t, x_range, y_range. Either from the model's raw data or by interpolating 
@@ -162,6 +163,8 @@ class Plotter_2D(object):
             ax.set_ylabel(r'$x$')
 
         fig.tight_layout()
+        if save_fig:
+            plt.savefig(save_dir)
         plt.show()
         
  
