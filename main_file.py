@@ -14,17 +14,29 @@ from Visualization import *
 from Analysis import *
 import sys
 import json
+import configparser
 
 if __name__ == '__main__':
 
-    print(f"Arguments count: {len(sys.argv)}")
-    for i, arg in enumerate(sys.argv):
-        print(f"Argument {i:>6}: {arg}")
+    req_config_args = {"HDF5_FileDirectory": None}
+    optional_config_args = {"DomainVariables": None,
+                   "FilterCoordinateRanges": None}
+    
+    if len(sys.argv) == 1:
+        print(f"You must pass arguments from either the command line or a config file.")
+        print(f"The {len(req_config_args)} necessary arguments are:")
+        print(req_config_args.keys())
+        raise Exception()
 
-    HDF5_Directory = str(sys.argv[1])
-    comm_line_dom_vars = json.loads(sys.argv[2])
-    comm_line_filtering_ranges = json.loads(sys.argv[3])
+    config = configparser.ConfigParser()
+    config.read(sys.argv[1])
 
+    for key in req_config_args.keys():
+        req_config_args[key] = json.loads(config['Required'][key])
+
+    for key in optional_config_args.keys():
+        optional_config_args[key] = json.loads(config['Optional'][key])
+        
     # Pickling Options
     LoadMicroModelFromPickleFile = True
     MicroModelPickleLoadFile = 'IdealHydro2D.pickle'
@@ -43,9 +55,9 @@ if __name__ == '__main__':
 
     # Read in data from file
     #HDF5_Directory = '../../../../../scratch/mjh1n20/Filtering_Data/KH/Ideal/t_49_50/2em1_1em1_1/'
-    HDF5_Directory = '../../../../../scratch/mjh1n20/Filtering_Data/KH/Testing/'
+    #HDF5_Directory = '../../../../../scratch/mjh1n20/Filtering_Data/KH/Testing/'
     #HDF5_Directory = '../../../METHOD_Marcus/Examples/IS_CE/KH2D_speedtesting/2d/Filtering/'
-    FileReader = METHOD_HDF5(HDF5_Directory, comm_line_dom_vars)
+    FileReader = METHOD_HDF5(req_config_args["HDF5_FileDirectory"], optional_config_args["DomainVariables"])
     #FileReader = METHOD_HDF5('../../Filtering/Data/KH/Ideal/t_998_1002/')
 
     # Create and setup micromodel
@@ -81,12 +93,12 @@ if __name__ == '__main__':
     # visualizer.plot_vars(micro_model, ['rho'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
     #                       interp_dims=(20,40), method='raw_data', components_indices=[()])   
 
-    visualizer.plot_vars(micro_model, ['p','rho','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/p_rho_n.pdf')         
-    visualizer.plot_vars(micro_model, ['W','v1','v2'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/W_v1_v2.pdf')  
-    visualizer.plot_vars(micro_model, ['T','s','h'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
-                      interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/T_s_h.pdf')  
+    # visualizer.plot_vars(micro_model, ['p','rho','n'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/p_rho_n.pdf')         
+    # visualizer.plot_vars(micro_model, ['W','v1','v2'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/W_v1_v2.pdf')  
+    # visualizer.plot_vars(micro_model, ['T','s','h'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', components_indices=[(),(),()], save_fig=True, save_dir='Output/T_s_h.pdf')  
 
         # visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
     #                   interp_dims=(20,40), method='raw_data', components_indices=[(1,)])
@@ -96,10 +108,10 @@ if __name__ == '__main__':
     # visualizer.plot_vars(micro_model, ['BC'], t=10.000, x_range=x_range_plotting, y_range=y_range_plotting,\
     #                       interp_dims=(20,40), method='interpolate', components_indices=[(1,)])
 
-    t_range = comm_line_filtering_ranges["t_range"]
-    x_range = comm_line_filtering_ranges["x_range"]
-    y_range = comm_line_filtering_ranges["y_range"]
-    n_txy_pts = comm_line_filtering_ranges["n_txy_pts"]
+    t_range = optional_config_args["FilterCoordinateRanges"]["t_range"]
+    x_range = optional_config_args["FilterCoordinateRanges"]["x_range"]
+    y_range = optional_config_args["FilterCoordinateRanges"]["y_range"]
+    n_txy_pts = optional_config_args["FilterCoordinateRanges"]["n_txy_pts"]
 
     t_to_plot = t_range[0]
     x_range_plotting = x_range
