@@ -1,0 +1,5 @@
+[Required]
+HDF5_FileDirectory = "./Data/Testing/20x40/"
+[Optional]
+DomainVariables = {"xmax":1.0}
+FilterCoordinateRanges = {"t_range":[9.98,10.02], "x_range":[-0.4,0.4], "y_range":[-0.8,0.8], "n_txy_pts":[5,10,20]}
