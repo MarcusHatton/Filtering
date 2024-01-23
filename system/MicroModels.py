@@ -5,9 +5,10 @@ Created on Fri Mar 31 10:00:02 2023
 @author: Thomas
 """
 
-from FileReaders import *
+from .FileReaders import *
 from scipy.interpolate import interpn 
-from system.BaseFunctionality import *
+from .BaseFunctionality import *
+
 import numpy as np
 import math
 import time
@@ -286,7 +287,7 @@ class IdealHydro_2D(object):
         self.all_var_strs = self.prim_strs + self.aux_strs + self.structures_strs
 
     def get_model_name(self):
-        return 'IdealHydro_2D'
+        return 'IdealHydro2D'
 
     def get_spatial_dims(self):
         return self.spatial_dims

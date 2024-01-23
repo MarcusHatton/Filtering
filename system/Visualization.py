@@ -5,12 +5,14 @@ Created on Mon Jun  5 03:14:43 2023
 @author: marcu
 """
 
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import interpn 
+
 from system.BaseFunctionality import *
 
 class Plotter_2D(object):
@@ -74,6 +76,7 @@ class Plotter_2D(object):
                         data_to_plot[i,j] = interpn(model.domain_vars['points'],\
                                             model.vars[var_str], point,\
                                             method = model.interp_method)[0][component_indices]         
+
             elif method == 'raw_data':
     
                 start_indices = Base.find_nearest_cell([t, x_range[0], y_range[0]], model.domain_vars['points'])
@@ -88,12 +91,9 @@ class Plotter_2D(object):
                           model.domain_vars['points'][2][j_s:j_f+1]]
                 
                 data_to_plot = model.vars[var_str][h:h+1, i_s:i_f+1, j_s:j_f+1][0]#[:, :, component_indices]
-                # print(data_to_plot)
                 if component_indices:
                     for component_index in component_indices:
                         data_to_plot = data_to_plot[:, :, component_index]
-
-
                 
             else:
                 print('Data method is not a valid choice! Must be interpolate or raw_data.')
@@ -161,11 +161,18 @@ class Plotter_2D(object):
             ax.set_title(var_str)
             ax.set_xlabel(r'$y$')
             ax.set_ylabel(r'$x$')
-
         fig.tight_layout()
         if save_fig:
+            for var_str in var_strs:
+                save_dir += var_str+'_'
+            save_dir += method
+            save_dir += '_'+model.get_model_name()
+            save_dir += '.pdf'
             plt.savefig(save_dir)
-        plt.show()
+            plt.close(fig)
+        else:
+            print('Showing a figure...')
+            plt.show()
         
  
     def plot_var_model_comparison(self, models, var_str, t, x_range, y_range, \

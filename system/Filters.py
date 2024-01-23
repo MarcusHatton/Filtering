@@ -10,9 +10,9 @@ import scipy.integrate as integrate
 from scipy.optimize import minimize
 from itertools import product
 
-from MicroModels import *
-from FileReaders import *
-from system.BaseFunctionality import *
+from .MicroModels import *
+from .FileReaders import *
+from .BaseFunctionality import *
 
 class Favre_observers(object): 
 

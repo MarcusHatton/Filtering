@@ -5,10 +5,11 @@ Created on Wed Nov  2 16:59:20 2022
 @author: mjh1n20
 """
 
-
-# from system.Setup import setup
-
 if __name__ == '__main__':
+
+    # from .BaseFunctionality import *
+    import .BaseFunctionality
+    from .BaseFunctionality import Base
 
     from multiprocessing import Process, Pool
     import os
@@ -22,9 +23,6 @@ if __name__ == '__main__':
 #    from mpl_toolkits.mplot3d import Axes3D
     from scipy.integrate import solve_ivp, quad
     import cProfile, pstats, io
-    # from system.BaseFunctionality import *
-    import system.BaseFunctionality
-    from system.BaseFunctionality import Base
     from functools import partial
     from itertools import repeat
     

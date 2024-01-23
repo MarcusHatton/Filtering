@@ -8,8 +8,9 @@ Created on Mon Mar 27 18:53:53 2023
 import numpy as np
 from scipy.integrate import quad
 from multiprocessing import Process, Pool
-from system.BaseFunctionality import *
 import pickle
+
+from .BaseFunctionality import *
 
 class NonIdealHydro2D(object):
 
@@ -48,7 +49,7 @@ class NonIdealHydro2D(object):
         self.diss_var_strs = ("Theta","Omega","Sigma")
         self.diss_vars = dict.fromkeys(self.diss_residual_strs)
 
-        self.diss_coeff_strs = ("Zeta", "Kappa", "Eta")
+        self.diss_coeff_strs = ("Zeta", "Kappa", "Eta", "Kappa_scalar", "Eta_scalar")
         self.diss_coeffs = dict.fromkeys(self.diss_coeff_strs)
         
         self.coefficient_strs = ("Gamma")
@@ -106,7 +107,7 @@ class NonIdealHydro2D(object):
         n_dims = self.spatial_dims+1
         self.meso_vars['U_coords'] = np.array(self.meso_vars['U_coords']).reshape([Nt, Nx, Ny, n_dims])
         self.meso_vars['U'] = np.array(self.meso_vars['U']).reshape([Nt, Nx, Ny, n_dims])
-        self.meso_vars['U_errors'] = np.array(self.meso_vars['U_errors']).reshape([Nt, Nx, Ny, 2])
+        self.meso_vars['U_errors'] = np.array(self.meso_vars['U_errors']).reshape([Nt, Nx, Ny])
         self.meso_vars['T~'] = np.zeros((Nt, Nx, Ny))
         self.meso_vars['N'] = np.zeros((Nt, Nx, Ny))
 
@@ -129,6 +130,8 @@ class NonIdealHydro2D(object):
         self.diss_coeffs['Zeta'] = np.zeros((Nt, Nx, Ny)) 
         self.diss_coeffs['Kappa'] = np.zeros((Nt, Nx, Ny, n_dims))
         self.diss_coeffs['Eta'] = np.zeros((Nt, Nx, Ny, n_dims, n_dims))
+        self.diss_coeffs['Kappa_scalar'] = np.zeros((Nt, Nx, Ny)) 
+        self.diss_coeffs['Eta_scalar'] = np.zeros((Nt, Nx, Ny)) 
         
         self.vars = self.filter_vars
         self.vars.update(self.meso_vars)
@@ -337,7 +340,24 @@ class NonIdealHydro2D(object):
         self.diss_vars['Theta'][h,i,j] = Theta
         self.diss_vars['Omega'][h,i,j] = Omega
         self.diss_vars['Sigma'][h,i,j] = Sigma
-        
+
+    def calc_scalar_kappa(self, q_vec, Omega_vec):
+        # Should implement a way of deciding the sign of kappa here,
+        # rather than always being positive...
+        q_vec_inner = np.einsum('i,i', q_vec, q_vec)
+        Omega_vec_inner = np.einsum('i,i', Omega_vec, Omega_vec)
+        if Omega_vec_inner == 0:
+            return 0.0
+        return np.sqrt(np.abs(q_vec_inner / Omega_vec_inner))
+    
+    def calc_scalar_eta(self, pi_tensor, Sigma_tensor):
+        # Same for eta here...
+        pi_tensor_inner = np.einsum('ii',pi_tensor)
+        Sigma_tensor_inner = np.einsum('ii', Sigma_tensor)
+        if Sigma_tensor_inner == 0.0:
+            return 0.0
+        return np.sqrt(np.abs(pi_tensor_inner / Sigma_tensor_inner))
+
     def calculate_dissipative_coefficients(self):
         Nt, Nx, Ny = self.domain_vars['Nt'], self.domain_vars['Nx'], self.domain_vars['Ny']
         # parallel_args = [(h, i, j) for h in range(Nt) for i in range(Nx) for j in range(Ny)]
@@ -361,8 +381,10 @@ class NonIdealHydro2D(object):
                       self.diss_coeffs['Zeta'][h,i,j] = -self.diss_residuals['Pi'][h,i,j] / self.diss_vars['Theta'][h,i,j]
                       for k in range(self.n_dims):
                           self.diss_coeffs['Kappa'][h,i,j,k] = -self.diss_residuals['q'][h,i,j,k] / self.diss_vars['Omega'][h,i,j,k]
+                          self.diss_coeffs['Kappa_scalar'][h,i,j] = self.calc_scalar_kappa(self.diss_residuals['q'][h,i,j], self.diss_vars['Omega'][h,i,j])
                           for l in range(self.n_dims):
                               self.diss_coeffs['Eta'][h,i,j,k,l] = -self.diss_residuals['pi'][h,i,j,k,l] / self.diss_vars['Sigma'][h,i,j,k,l]
+                              self.diss_coeffs['Eta_scalar'][h,i,j] = self.calc_scalar_eta(self.diss_residuals['pi'][h,i,j], self.diss_vars['Sigma'][h,i,j])
                     
         for diss_coeff_str in self.diss_coeff_strs:
             coeffs_handle = open(diss_coeff_str+'.pickle', 'wb')

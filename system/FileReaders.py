@@ -65,7 +65,7 @@ class METHOD_HDF5(object):
             try: 
                 if dom_var_str == 'nt': 
                     pass
-                else: 
+                else:
                     micro_model.domain_vars[dom_var_str] = int( self.hdf5_files[0]['Domain/' + dom_var_str][:])
             except KeyError:
                 print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/.')
@@ -114,9 +114,27 @@ class METHOD_HDF5(object):
         #     except KeyError:
         #         print(f'{dom_var_str} is not in the hdf5 dataset: check Domain/')
 
+        if bool(micro_model.domain_vars['nx']) and bool(micro_model.domain_vars['xmin']) and bool(micro_model.domain_vars['xmax']):
+            print('Calculating x-grid using nx, xmin and xmax')
+            micro_model.domain_vars['x'] = np.linspace(micro_model.domain_vars['xmin'], micro_model.domain_vars['xmax'], micro_model.domain_vars['nx'])
+
+        if bool(micro_model.domain_vars['ny']) and bool(micro_model.domain_vars['ymin']) and bool(micro_model.domain_vars['ymax']):
+            print('Calculating y-grid using ny, ymin and ymax')
+            micro_model.domain_vars['y'] = np.linspace(micro_model.domain_vars['ymin'], micro_model.domain_vars['ymax'], micro_model.domain_vars['ny'])
+
         micro_model.domain_vars['nt'] = self.num_files
-        for counter in range(self.num_files):
-            micro_model.domain_vars['t'].append( float(self.hdf5_files[counter]['Domain/endTime'][:]))
+        try:
+            for counter in range(self.num_files):
+                micro_model.domain_vars['t'].append( float(self.hdf5_files[counter]['Domain/endTime'][:]))
+        except KeyError:
+            print('Time data cannot be found from the HDF5 files.\n')
+            print('Will try to calculate it from command-line data instead.')
+            try:
+                micro_model.domain_vars['t'] = np.linspace(self.comm_line_dom_vars["tmin"],self.comm_line_dom_vars["tmax"],micro_model.domain_vars['nt'])
+                print('Done!\n')
+            except KeyError:
+                print(f'tmin and tmax are not in the command-line dictionary either.\n')
+
         micro_model.domain_vars['t'] = np.array(micro_model.domain_vars['t'])
         micro_model.domain_vars['tmin'] = np.amin(micro_model.domain_vars['t'])
         micro_model.domain_vars['tmax'] = np.amax(micro_model.domain_vars['t'])
