@@ -131,6 +131,8 @@ if __name__ == '__main__':
     x_range_plotting = optional_config_args["MicroPlottingRanges"]["x_range"]
     y_range_plotting = optional_config_args["MicroPlottingRanges"]["y_range"]
 
+    """
+
     visualizer.plot_vars(micro_model, ['T'], t=micro_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                          interp_dims=(20,40), method='raw_data', components_indices=[()], save_fig=True, save_dir=fig_save_dir)#+'v1.pdf')
 
@@ -146,6 +148,8 @@ if __name__ == '__main__':
                           interp_dims=(20,40), method='interpolate', components_indices=[(),(),()], save_fig=True, save_dir=fig_save_dir)#+'v1.pdf')
     visualizer.plot_vars(micro_model, ['BC'], t=micro_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                           interp_dims=(20,40), method='interpolate', components_indices=[(1,)], save_fig=True, save_dir=fig_save_dir)
+
+    """
 
     # Create the observer-finder and filter
     ObsFinder = FindObs_drift_root(micro_model,box_len=0.001)
@@ -201,7 +205,6 @@ if __name__ == '__main__':
     # Analyse coefficients of the MesoModel
     analyzer = CoefficientAnalysis(visualizer)
 
-    """
     # Zeta
     visualizer.plot_vars(meso_model, ['Zeta'], t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', components_indices=[()],\
@@ -215,7 +218,6 @@ if __name__ == '__main__':
                        interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(0,),\
                        save_fig=True, save_dir=fig_save_dir)
 
-    """
 
     # # Kappa    
     visualizer.plot_vars(meso_model, ['Kappa'], t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
@@ -248,7 +250,7 @@ if __name__ == '__main__':
 
     analyzer.JointPlot(meso_model, meso_model, 'Kappa_scalar', 'N', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(),\
-                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[0.2,0.8])
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[0.2,0.8], y_trim=True, y_trim_vals=[1e-5,np.inf])
 
     analyzer.JointPlot(meso_model, meso_model, 'Omega', 'T~', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,),\
@@ -260,9 +262,11 @@ if __name__ == '__main__':
 
 
     # Eta
+
 #    visualizer.plot_vars(meso_model, ['pi'], t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
 #                      interp_dims=(20,40), method='raw_data', components_indices=[(1,2)],\
 #                      save_fig=True, save_dir=fig_save_dir)
+
 
     visualizer.plot_vars(meso_model, ['Sigma'], t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                       interp_dims=(20,40), method='raw_data', components_indices=[(1,2)],\
@@ -302,7 +306,7 @@ if __name__ == '__main__':
 
     analyzer.RegPlot(meso_model, meso_model, 'Eta', 'T~', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(),\
-                       save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[2,8], order=5, logx=False)
+                       save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[2,8], order=1, logx=True, robust=True, log_fit=True)
 
     analyzer.JointPlot(meso_model, meso_model, 'Eta_scalar', 'T~', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(),\
@@ -314,7 +318,7 @@ if __name__ == '__main__':
 
     analyzer.RegPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(0,),\
-                       save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[-np.inf, 1.10], order=10, logx=False)
+                       save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[-np.inf, 1.10], order=1, logx=True, robust=True, log_fit=True)
 
     analyzer.JointPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,2),\
@@ -322,7 +326,7 @@ if __name__ == '__main__':
 
     analyzer.RegPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,2),\
-                       x_component_indices=(1,), save_fig=True, save_dir=fig_save_dir, order=1)
+                       x_component_indices=(1,), save_fig=True, save_dir=fig_save_dir, order=1, logx=True, robust=True, x_mod=True, log_fit=True)
 
     analyzer.JointPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,2),\
@@ -330,7 +334,8 @@ if __name__ == '__main__':
 
     analyzer.RegPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,2),\
-                       x_component_indices=(2,), save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[-0.1,0.1], order=1)
+                       x_component_indices=(2,), save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[-0.1,0.1],\
+                       order=1, logx=True, robust=True, x_mod=True, log_fit=True)
 
     analyzer.JointPlot(meso_model, meso_model, 'Sigma', 'N', t=meso_t_to_plot, x_range=x_range_plotting,\
                        y_range=y_range_plotting, interp_dims=(20,40), method='raw_data', y_component_indices=(1,2),\
@@ -355,7 +360,7 @@ if __name__ == '__main__':
     analyzer.JointPlot(meso_model, micro_model, 'Eta', 'v2', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                       interp_dims=(20,40), method='interpolate', y_component_indices=(1,2), x_component_indices=(),\
                       clip=True, save_fig=True, save_dir=fig_save_dir)
-        
+
     print(f'Total elapsed CPU time for finding is {time.process_time() - CPU_start_time}.')
     print(f'Time per gridpoint of the MesoModel is {(time.process_time() - CPU_start_time)/np.prod(np.array(n_txy_pts))}.')
    

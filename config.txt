@@ -1,14 +1,14 @@
 [Required]
 ##HDF5_FileDirectory = "./Data/Testing/20x40/"
 ##HDF5_FileDirectory = "/mainfs/filtering/Data/KHI/Ideal/t_49_50/2em1_1em1_1/100x200/"
-HDF5_FileDirectory = "/mainfs/filtering/Data/KHI/Ideal/t_1998_2002/800x1600/"
+HDF5_FileDirectory = "/mainfs/filtering/Data/KHI/Ideal/t_998_1002/800x1600/"
 MicroModel = "IdealHydro2D"
 MesoModel = "NonIdealHydro2D"
 [Optional]
 ##LoadDumpMicroMesoPickles = {"LoadMicro":False, "DumpMicro":True, "LoadMeso":False, "DumpMeso":True}
-FigureOutputDirectory = "./Output/t_1998_2002/800x1600/Figures/"
-PickleIODirectory = "./Output/t_1998_2002/800x1600/Pickles/"
-DomainVariables = {"nx":800, "ny":1600, "xmin":-0.5, "xmax":0.5, "ymin":-1.0, "ymax":1.0, "tmin":19.98, "tmax":20.02}
-FilterCoordinateRanges = {"t_range":[19.99,20.01], "x_range":[-0.4,0.4], "y_range":[-0.8,0.8], "n_txy_pts":[3,50,100]}
-MicroPlottingRanges = {"t_point":20.0, "x_range":[-0.5,0.5], "y_range":[-1.0,1.0]}
-MesoPlottingRanges = {"t_point":20.0, "x_range":[-0.4,0.4], "y_range":[-0.8,0.8]}
+FigureOutputDirectory = "./Output/t_998_1002/800x1600/Figures/"
+PickleIODirectory = "./Output/t_998_1002/800x1600/Pickles/"
+DomainVariables = {"nx":800, "ny":1600, "xmin":-0.5, "xmax":0.5, "ymin":-1.0, "ymax":1.0, "tmin":9.98, "tmax":10.02}
+FilterCoordinateRanges = {"t_range":[9.99,10.01], "x_range":[-0.4,0.4], "y_range":[-0.8,0.8], "n_txy_pts":[3,50,100]}
+MicroPlottingRanges = {"t_point":10.0, "x_range":[-0.5,0.5], "y_range":[-1.0,1.0]}
+MesoPlottingRanges = {"t_point":10.0, "x_range":[-0.4,0.4], "y_range":[-0.8,0.8]}

@@ -352,8 +352,8 @@ class NonIdealHydro2D(object):
     
     def calc_scalar_eta(self, pi_tensor, Sigma_tensor):
         # Same for eta here...
-        pi_tensor_inner = np.einsum('ii',pi_tensor)
-        Sigma_tensor_inner = np.einsum('ii', Sigma_tensor)
+        pi_tensor_inner = np.einsum('ij,ji',pi_tensor,pi_tensor)
+        Sigma_tensor_inner = np.einsum('ij,ji', Sigma_tensor, Sigma_tensor)
         if Sigma_tensor_inner == 0.0:
             return 0.0
         return np.sqrt(np.abs(pi_tensor_inner / Sigma_tensor_inner))
