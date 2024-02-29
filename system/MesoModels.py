@@ -282,10 +282,13 @@ class NonIdealHydro2D(object):
         pi_res = tau_res - np.dot((p_tilde + Pi_res),h_mu_nu)
         
         # print(Pi_res, q_res, pi_res)
+        print('HELLO HELLO')
 
         self.diss_residuals['Pi'][h,i,j] = Pi_res
         self.diss_residuals['q'][h,i,j] = q_res
         self.diss_residuals['pi'][h,i,j] = pi_res
+
+        print(self.diss_residuals['pi'][h,i,j])
 
     def calculate_dissipative_variables(self, h, i, j):
         """

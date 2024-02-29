@@ -304,9 +304,35 @@ if __name__ == '__main__':
                        interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(),\
                        save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[2,8])
 
+    #analyzer.RegPlot(meso_model, meso_model, 'Eta', 'T~', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
+    #                   interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(),\
+    #                   save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[2,8], order=1, logx=True, robust=True, log_fit=True)
+
+    analyzer.RegPlot(meso_model, meso_model, 'Eta', 'Sigma', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
+                       interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(1,2),\
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[2,8], order=1, seaborn_log_fit=False,\
+                       x_log=True, x_mod=True, y_mod=True, y_log=True, robust=True, manual_fit='linear')
+
+    analyzer.RegPlot(meso_model, meso_model, 'Eta', 'pi', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
+                       interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(1,2),\
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[2,8], order=1, seaborn_log_fit=False,\
+                       x_log=True, y_log=True, robust=True, manual_fit='linear')
+
     analyzer.RegPlot(meso_model, meso_model, 'Eta', 'T~', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(),\
-                       save_fig=True, save_dir=fig_save_dir, x_trim=True, x_trim_vals=[2,8], order=1, logx=True, robust=True, log_fit=True)
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[2,8], order=1, seaborn_log_fit=False,\
+                       x_log=True, y_log=True, robust=True, manual_fit='')
+
+    analyzer.RegPlot(meso_model, meso_model, 'Eta', 'N', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
+                       interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(),\
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[2,8], order=1, seaborn_log_fit=False,\
+                       x_log=True, y_log=True, robust=True, manual_fit='')
+
+    analyzer.RegPlot(meso_model, meso_model, 'Eta', 'U', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
+                       interp_dims=(20,40), method='raw_data', y_component_indices=(1,2), x_component_indices=(0,),\
+                       save_fig=True, save_dir=fig_save_dir, x_trim=False, x_trim_vals=[2,8], order=1, seaborn_log_fit=False,\
+                       x_log=True, y_log=True, robust=True, manual_fit='')
+
 
     analyzer.JointPlot(meso_model, meso_model, 'Eta_scalar', 'T~', t=meso_t_to_plot, x_range=x_range_plotting, y_range=y_range_plotting,\
                        interp_dims=(20,40), method='raw_data', y_component_indices=(), x_component_indices=(),\

@@ -30,47 +30,79 @@ class CoefficientAnalysis(object):
     def RegPlot(self, model1, model2, y_var_str, x_var_str, t, x_range, y_range,
                   interp_dims, method, y_component_indices, x_component_indices,\
                   save_fig=False, save_dir='', x_trim=False, x_trim_vals=[-np.inf,np.inf],\
-                  y_trim=False, y_trim_vals=[-np.inf,np.inf], order=1, logx=False, robust=False,\
-                  x_mod=False, x_log=False, y_mod=False, y_log=False, log_fit=False):
+                  y_trim=False, y_trim_vals=[-np.inf,np.inf], order=1, seaborn_log_fit=False, robust=False,\
+                  x_mod=False, x_log=False, y_mod=False, y_log=False, manual_fit=''):
 
+	# Get raw data from models
         y_data, points = \
             self.visualizer.get_var_data(model1, y_var_str, t, x_range, y_range, interp_dims, method, y_component_indices)
         x_data, points = \
             self.visualizer.get_var_data(model2, x_var_str, t, x_range, y_range, interp_dims, method, x_component_indices)
 
+        # Flatten it for ease of use
         y_data = y_data.flatten()
         x_data = x_data.flatten()
 
-        if x_mod or x_log:
-            self.clip_flat(x_data, mod=x_mod, log=x_log)
-        if y_mod or y_log:
-            self.clip_flat(y_data, mod=y_mod, log=y_log)
-
+        # Trim the data's extrema
         if x_trim or y_trim:
             y_data, x_data = self.trim_flat(y_data, x_data, x_min_max=x_trim_vals, y_min_max=y_trim_vals)
+
+        # Take modulus and/or log of the data
+        if y_mod or y_log:
+            self.clip_flat(y_data, mod=y_mod, log=y_log)
+        if x_mod or x_log:
+            self.clip_flat(x_data, mod=x_mod, log=x_log)
 
         #robust = True
         #if sum((order > 1, robust, logx)) > 1:
         #    robust = False
         #    raise ValueError("Mutually exclusive regression options.")
 
-        # Fitting a logarithmic function - TESTING
-        def func(x, p1, p2, p3, p4):
-            return p1*np.log(p2*x + p3) + p4
- 
-        popt, pcov = curve_fit(func, x_data, y_data, p0=(1.0,1.0,0.0,-5.0))
-        p1, p2, p3, p4 = popt[0], popt[1], popt[2], popt[3]
-        print(x_var_str)
-        print(p1, p2, p3, p4)
- 
-        x_curve=np.linspace(np.min(x_data),np.max(x_data),1000)
-        y_curve=func(x_curve,p1,p2,p3,p4)
-
         fig = plt.figure(figsize=(16,16))
-        sns.regplot(x=x_data, y=y_data, color="#4CB391", order=order, logx=logx)#, robust=robust, x_estimator=x_estimator, x_bins=x_bins)
+        sns.regplot(x=x_data, y=y_data, color="#4CB391", order=order, logx=seaborn_log_fit)#, robust=robust, x_estimator=x_estimator, x_bins=x_bins)
 
-        if log_fit == True:
+        # Fitting a logarithmic function - TESTING
+        if manual_fit == 'logarithmic':
+            def func(x, p1, p2, p3, p4):
+                return p1*np.log(p2*x + p3) + p4
+
+            popt, pcov = curve_fit(func, x_data, y_data, p0=(1.0,1.0,0.0,-5.0))
+            p1, p2, p3, p4 = popt[0], popt[1], popt[2], popt[3]
+            #print(x_var_str)
+            #print(p1, p2, p3, p4)
+
+            x_curve=np.linspace(np.min(x_data),np.max(x_data),1000)
+            y_curve=func(x_curve,p1,p2,p3,p4)
             plt.plot(x_curve, y_curve,'r', linewidth=5)
+
+        # Fitting a logarithmic function - TESTING
+        if manual_fit == 'linear':
+            def func(x, p1, p2):
+                return p1*x + p2
+            #print(x_data, y_data)
+            popt, pcov = curve_fit(func, x_data, y_data, p0=(1.0,1.0))
+            p1, p2= popt[0], popt[1]
+            #print(x_var_str)
+            #print(p1, p2)
+
+            x_curve=np.linspace(np.min(x_data),np.max(x_data),1000)
+            y_curve=func(x_curve,p1,p2)
+            plt.plot(x_curve, y_curve,'r', linewidth=5)
+
+        # Fitting a logarithmic function - TESTING
+        if manual_fit == 'power_law':
+            def func(x, p1, p2, p3):
+                return p1*x**p3 + p2
+
+            popt, pcov = curve_fit(func, x_data, y_data, p0=(1.0,1.0,1.0))
+            p1, p2, p3 = popt[0], popt[1], popt[2]
+            #print(x_var_str)
+            #print(p1, p2, p3)
+
+            x_curve=np.linspace(np.min(x_data),np.max(x_data),1000)
+            y_curve=func(x_curve,p1,p2,p3)
+            plt.plot(x_curve, y_curve,'r', linewidth=5)
+
 
         plt.title(y_var_str+'('+x_var_str+')')
         fig.tight_layout()
@@ -85,11 +117,6 @@ class CoefficientAnalysis(object):
             print('Showing a figure...')
             plt.show()
 
-        if log_fit == True:
-            plt.plot(x_curve, y_curve,'r', linewidth=5)
-            plt.savefig('./Testing.pdf')
-
-        
 
     def JointPlot(self, model1, model2, y_var_str, x_var_str, t, x_range, y_range,\
                   interp_dims, method, y_component_indices, x_component_indices,
@@ -159,7 +186,9 @@ class CoefficientAnalysis(object):
                 data[i] = np.log10(data[i])
         if log and not mod:
             for i in range(data.shape[0]):
-                data[i] = np.log10(data[i])
+                sign = np.sign(data[i])
+                print(sign)
+                data[i] = sign*np.log10(np.abs(data[i]))
         if mod and not log:
             for i in range(data.shape[0]):
                 data[i] = np.abs(data[i])
