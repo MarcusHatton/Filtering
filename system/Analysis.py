@@ -45,13 +45,13 @@ class CoefficientAnalysis(object):
 
         # Trim the data's extrema
         if x_trim or y_trim:
-            y_data, x_data = self.trim_flat(y_data, x_data, x_min_max=x_trim_vals, y_min_max=y_trim_vals)
+            y_data, x_data = Base.trim_flat(y_data, x_data, x_min_max=x_trim_vals, y_min_max=y_trim_vals)
 
         # Take modulus and/or log of the data
         if y_mod or y_log:
-            self.clip_flat(y_data, mod=y_mod, log=y_log)
+            Base.clip_flat(y_data, mod=y_mod, log=y_log)
         if x_mod or x_log:
-            self.clip_flat(x_data, mod=x_mod, log=x_log)
+            Base.clip_flat(x_data, mod=x_mod, log=x_log)
 
         #robust = True
         #if sum((order > 1, robust, logx)) > 1:
@@ -132,11 +132,11 @@ class CoefficientAnalysis(object):
         x_data = x_data.flatten()
         
         if clip:
-            self.clip_flat(x_data, mod=True, log=True)
-            self.clip_flat(y_data, mod=True, log=True)
+            Base.clip_flat(x_data, mod=True, log=True)
+            Base.clip_flat(y_data, mod=True, log=True)
 
         if x_trim or y_trim:
-            y_data, x_data = self.trim_flat(y_data, x_data, x_min_max=x_trim_vals, y_min_max=y_trim_vals)
+            y_data, x_data = Base.trim_flat(y_data, x_data, x_min_max=x_trim_vals, y_min_max=y_trim_vals)
 
         fig = plt.figure(figsize=(16,16))
         sns.jointplot(x=x_data, y=y_data, kind="hex", color="#4CB391")
@@ -161,7 +161,7 @@ class CoefficientAnalysis(object):
             self.visualizer.get_var_data(model, var_str, t, x_range, y_range, interp_dims, method, component_indices)
 
         if clip:
-            self.clip(data_to_plot, mod=True, log=True)
+            Base.clip(data_to_plot, mod=True, log=True)
 
         fig = plt.figure(figsize=(16,16))
         sns.displot(data_to_plot)
@@ -178,61 +178,107 @@ class CoefficientAnalysis(object):
         else:
             print('Showing a figure...')
             plt.show()
+            
+    def FourierAnalysis(self, model, t, x_range, y_range, interp_dims, 
+                         method, component_indices, save_fig=False, save_dir='', clip=False):
+        
+        # Gather relevant data for KE power spectrum
+        W, points = self.visualizer.get_var_data(model, 'W', t, x_range, y_range, interp_dims, method, component_indices)
+        U0, points = self.visualizer.get_var_data(model, 'U', t, x_range, y_range, interp_dims, method, component_indices=(0,))
+        rho, points = self.visualizer.get_var_data(model, 'vx', t, x_range, y_range, interp_dims, method, component_indices)
+        
+        # Calculate the Kinetic Energy
+        KE = rho * W * (W - 1)
 
-    def clip_flat(self, data, mod=False, log=False):
-        if mod and log:
-            for i in range(data.shape[0]):
-                data[i] = np.abs(data[i])
-                data[i] = np.log10(data[i])
-        if log and not mod:
-            for i in range(data.shape[0]):
-                sign = np.sign(data[i])
-                print(sign)
-                data[i] = sign*np.log10(np.abs(data[i]))
-        if mod and not log:
-            for i in range(data.shape[0]):
-                data[i] = np.abs(data[i])
-        #return data
+        if not 'Ideal' in locals():
+            Ideal = Anim('Ideal/HighRes/Data/TimeSeries/UserDef/')
+            idealT = Ideal.t.index(min(Ideal.t, key=lambda x : abs(x-3.0)))
+            Nideal = Ideal.final.c['nx'] // 2
+            KESpecIdeal = getPowerSpectrumSq(Ideal.final, GetKESF(Ideal, Ideal.frame[idealT]))
+    
+        ### Model Power Spectrum
+    
+        fig, axs = plt.subplots(1, 1, sharex=True)
+        fig.set_size_inches(6,3)
+        fig.tight_layout()
+    
+        # Kinetic energy density power
+        axs.loglog(np.arange(1, Nideal+1), np.arange(1, Nideal+1)*KESpecIdeal, label=r'$Single \ Fluid \ Ideal$')
+        axs.loglog(np.arange(1, Nresistive+1), np.arange(1, Nresistive+1)*KESpecResistive, label=r'$Single \ Fluid \ Resistive$')
+        axs.loglog(np.arange(1, NtwoFluid+1), np.arange(1, NtwoFluid+1)*KESpecTwoFluid, label=r'$Two \ Fluid \ Resistive$')
+        axs.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
+        axs.set_xlabel(r'$k$')
+        axs.loglog([3, 94.868], [7*10**-2, 7*10**(-2 - 1.5*5/3)], 'k--')
+        axs.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
+        axs.set_xlim([1, Nideal])
+        axs.legend(loc='lower left')
+    
+    #     plt.savefig('Figures/KineticEnergyPowerSpectrum.eps', format='eps', dpi=1200, bbox_inches='tight')
+        plt.show()
 
-    def clip(self, data, mod=False, log=False):
-        if mod and log:
-            for i in range(data.shape[0]):
-                for j in range(data.shape[1]):
-                    data[i,j] = np.abs(data[i,j])
-                    data[i,j] = np.log10(data[i,j])
-        if log and not mod:
-            for i in range(data.shape[0]):
-                for j in range(data.shape[1]):
-                    data[i,j] = np.log10(data[i,j])
-        if mod and not log:
-            for i in range(data.shape[0]):
-                for j in range(data.shape[1]):
-                    data[i,j] = np.abs(data[i,j])
-        #return data
 
-    def trim_flat(self, y_data, x_data, x_min_max, y_min_max):
-        x_min, x_max = x_min_max[0], x_min_max[1]
-        y_min, y_max = y_min_max[0], y_min_max[1]
-        i = 0
-        while i < y_data.shape[0]:
-            if x_data[i] < x_min or x_data[i] > x_max\
-            or y_data[i] < y_min or y_data[i] > y_max:
-                y_data = np.delete(y_data, i)
-                x_data = np.delete(x_data, i)
-            elif x_data[i] > x_max:
-                y_data = np.delete(y_data, i)
-                x_data = np.delete(x_data, i)
-            else:
-                i += 1
-        return y_data, x_data
+        
+    def getFourierTrans(u, nx, ny):
+        """
+        Returns the 1D discrete fourier transform of the variable u along the x-direction
+        ready for the power spectrum method.
+        Parameters
+        ----------
+        u : ndarray
+            Two dimensional array of the variable we want the power spectrum of
+        Returns
+        -------
+        uhat : array (N,)
+            Fourier transform of u
+        """
+        NN = nx // 2
+        uhat = np.zeros((NN, ny), dtype=np.complex_)
+    
+        for k in range(NN):
+            for y in range(ny):
+                # Sum over all x adding to uhat
+                for i in range(nx):
+                    uhat[k, y] += u[i, y] * np.exp(-(2*np.pi*1j*k*i)/nx)
+        return uhat / nx        
 
-    def trim(self, y_data, x_data, x_minimum):
-        for i in range(y_data.shape[0]):
-            for j in range(y_data.shape[1]):
-                if x_data[i,j] < x_minimum:
-                    y_data = np.delete(y_data, [i,j])
-                    x_data = np.delete(x_data, [i,j])
-        #return y_data, x_data
+    def getPowerSpectrumSq(u, nx, ny, dy):
+        """
+        Returns the integrated power spectrum of the variable u, up to the Nyquist frequency = nx/2
+        Parameters
+        ----------
+        u : ndarray
+            Two dimensional array of the variable we want the power spectrum of
+        """
+        NN = nx // 2
+        uhat = getFourierTrans(u, nx, ny)
+        P = np.zeros(NN)
+    
+        for k in range(NN):
+            for j in range(ny):
+                P[k] += (np.absolute(uhat[k, j])**2) * dy
+    
+        P = P / np.sum(P)
+        return P        
+            
+    def GetKESF(frame):
+        """
+        Retrieves and computes the kinetic energy density for each frame in a single fluid animation.
+        Parameters
+        ----------
+        """
+        vx = frame[anim.variables.index("vx\n"), 4:-4, 4:-4, 0]
+        vy = frame[anim.variables.index("vy\n"), 4:-4, 4:-4, 0]
+        rho = frame[anim.variables.index("rho\n"), 4:-4, 4:-4, 0]
+        vsq = vx**2 + vy**2
+        W = 1 / np.sqrt(1 - vsq)
+        KE = rho * W * (W-1)
+    
+        return KE        
+        
+
+
+        
+    
 
 
 

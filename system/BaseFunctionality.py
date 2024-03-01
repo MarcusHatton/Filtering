@@ -90,6 +90,66 @@ class Base(object):
             positions.append(Base.find_nearest(points[dim], point[dim]))
         return [np.where(points[i] == positions[i])[0][0] for i in range(len(positions))]
     
+    @staticmethod
+    def clip_flat(self, data, mod=False, log=False):
+        if mod and log:
+            for i in range(data.shape[0]):
+                data[i] = np.abs(data[i])
+                data[i] = np.log10(data[i])
+        if log and not mod:
+            for i in range(data.shape[0]):
+                sign = np.sign(data[i])
+                print(sign)
+                data[i] = sign*np.log10(np.abs(data[i]))
+        if mod and not log:
+            for i in range(data.shape[0]):
+                data[i] = np.abs(data[i])
+        #return data
+
+    @staticmethod
+    def clip(self, data, mod=False, log=False):
+        if mod and log:
+            for i in range(data.shape[0]):
+                for j in range(data.shape[1]):
+                    data[i,j] = np.abs(data[i,j])
+                    data[i,j] = np.log10(data[i,j])
+        if log and not mod:
+            for i in range(data.shape[0]):
+                for j in range(data.shape[1]):
+                    data[i,j] = np.log10(data[i,j])
+        if mod and not log:
+            for i in range(data.shape[0]):
+                for j in range(data.shape[1]):
+                    data[i,j] = np.abs(data[i,j])
+        #return data
+
+    @staticmethod
+    def trim_flat(self, y_data, x_data, x_min_max, y_min_max):
+        x_min, x_max = x_min_max[0], x_min_max[1]
+        y_min, y_max = y_min_max[0], y_min_max[1]
+        i = 0
+        while i < y_data.shape[0]:
+            if x_data[i] < x_min or x_data[i] > x_max\
+            or y_data[i] < y_min or y_data[i] > y_max:
+                y_data = np.delete(y_data, i)
+                x_data = np.delete(x_data, i)
+            elif x_data[i] > x_max:
+                y_data = np.delete(y_data, i)
+                x_data = np.delete(x_data, i)
+            else:
+                i += 1
+        return y_data, x_data
+
+    @staticmethod
+    def trim(self, y_data, x_data, x_minimum):
+        for i in range(y_data.shape[0]):
+            for j in range(y_data.shape[1]):
+                if x_data[i,j] < x_minimum:
+                    y_data = np.delete(y_data, [i,j])
+                    x_data = np.delete(x_data, [i,j])
+        #return y_data, x_data
+    
+    
     def profile(self, fnc):
         """A decorator that uses cProfile to profile a function"""
         def inner(*args, **kwargs):
