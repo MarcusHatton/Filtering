@@ -148,6 +148,41 @@ class Base(object):
                     y_data = np.delete(y_data, [i,j])
                     x_data = np.delete(x_data, [i,j])
         #return y_data, x_data
+        
+    @staticmethod
+    def getFourierTrans(u, nx, ny):
+        """
+        Returns the 1D discrete fourier transform of the variable u along both 
+        the x and y directions ready for the power spectrum method.
+        Parameters
+        ----------
+        u : ndarray
+            Two dimensional array of the variable we want the power spectrum of
+        Returns
+        -------
+        uhat : array (N,)
+            Fourier transform of u
+        """
+       
+        NN = nx // 2
+        uhat_x = np.zeros((NN, ny), dtype=np.complex_)
+    
+        for k in range(NN):
+            for y in range(ny):
+                # Sum over all x adding to uhat
+                for i in range(nx):
+                    uhat_x[k, y] += u[i, y] * np.exp(-(2*np.pi*1j*k*i)/nx)
+
+        NN = ny // 2
+        uhat_y = np.zeros((NN, nx), dtype=np.complex_)
+        
+        for k in range(NN):
+            for x in range(nx):
+                # Sum over all y adding to uhat
+                for i in range(ny):
+                    uhat_y[k, x] += u[i, x] * np.exp(-(2*np.pi*1j*k*i)/ny)
+
+        return (uhat_x / nx), (uhat_y / ny) 
     
     
     def profile(self, fnc):

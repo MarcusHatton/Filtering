@@ -14,6 +14,8 @@ import pickle
 import seaborn as sns
 from scipy.optimize import curve_fit
 
+from .BaseFunctionality import *
+
 class CoefficientAnalysis(object):
     
     def __init__(self, visualizer):
@@ -179,69 +181,56 @@ class CoefficientAnalysis(object):
             print('Showing a figure...')
             plt.show()
             
-    def FourierAnalysis(self, model, t, x_range, y_range, interp_dims, 
-                         method, component_indices, save_fig=False, save_dir='', clip=False):
+
+class FourierAnalysis(object):
+    
+    def __init__(self, visualizer):
+        """
+        Nothing as yet...
+
+        Returns
+        -------
+        Also nothing...
         
+        """
+        self.visualizer = visualizer # need to re-structure this... or do I
+
+    def PerformAnalysis(self, model, t, x_range, y_range, interp_dims, 
+                         method, component_indices, save_fig=False, save_dir='', clip=False):
+
         # Gather relevant data for KE power spectrum
         W, points = self.visualizer.get_var_data(model, 'W', t, x_range, y_range, interp_dims, method, component_indices)
-        U0, points = self.visualizer.get_var_data(model, 'U', t, x_range, y_range, interp_dims, method, component_indices=(0,))
-        rho, points = self.visualizer.get_var_data(model, 'vx', t, x_range, y_range, interp_dims, method, component_indices)
+        # U0, points = self.visualizer.get_var_data(model, 'U', t, x_range, y_range, interp_dims, method, component_indices=(0,))
+        rho, points = self.visualizer.get_var_data(model, 'rho', t, x_range, y_range, interp_dims, method, component_indices)
         
-        # Calculate the Kinetic Energy
-        KE = rho * W * (W - 1)
-
-        if not 'Ideal' in locals():
-            Ideal = Anim('Ideal/HighRes/Data/TimeSeries/UserDef/')
-            idealT = Ideal.t.index(min(Ideal.t, key=lambda x : abs(x-3.0)))
-            Nideal = Ideal.final.c['nx'] // 2
-            KESpecIdeal = getPowerSpectrumSq(Ideal.final, GetKESF(Ideal, Ideal.frame[idealT]))
+        # Calculate the KE
+        KE = rho * W * (W-1)
+        
+        # Get its FT'd power spectrum
+        KESpectra = self.getPowerSpectrumSq(KE, points)
     
         ### Model Power Spectrum
-    
-        fig, axs = plt.subplots(1, 1, sharex=True)
+        fig, axs = plt.subplots(1, 2)#, sharex=True)
         fig.set_size_inches(6,3)
         fig.tight_layout()
     
+        Nideal=5
         # Kinetic energy density power
-        axs.loglog(np.arange(1, Nideal+1), np.arange(1, Nideal+1)*KESpecIdeal, label=r'$Single \ Fluid \ Ideal$')
-        axs.loglog(np.arange(1, Nresistive+1), np.arange(1, Nresistive+1)*KESpecResistive, label=r'$Single \ Fluid \ Resistive$')
-        axs.loglog(np.arange(1, NtwoFluid+1), np.arange(1, NtwoFluid+1)*KESpecTwoFluid, label=r'$Two \ Fluid \ Resistive$')
-        axs.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
-        axs.set_xlabel(r'$k$')
-        axs.loglog([3, 94.868], [7*10**-2, 7*10**(-2 - 1.5*5/3)], 'k--')
-        axs.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
-        axs.set_xlim([1, Nideal])
-        axs.legend(loc='lower left')
+        for ax, KESpectrum in zip(axs, KESpectra):
+            axs.loglog(np.arange(1, Nideal+1), np.arange(1, Nideal+1)*KESpectrum, label=r'$Single \ Fluid \ Ideal$')
+            axs.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
+            axs.set_xlabel(r'$k$')
+            axs.loglog([3, 94.868], [7*10**-2, 7*10**(-2 - 1.5*5/3)], 'k--')
+            axs.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
+            axs.set_xlim([1, Nideal])
+            axs.legend(loc='lower left')
     
-    #     plt.savefig('Figures/KineticEnergyPowerSpectrum.eps', format='eps', dpi=1200, bbox_inches='tight')
-        plt.show()
+        plt.savefig('Figures/KineticEnergyPowerSpectrum.pdf', format='pdf', dpi=1200, bbox_inches='tight')
+#        plt.show()
 
+       
 
-        
-    def getFourierTrans(u, nx, ny):
-        """
-        Returns the 1D discrete fourier transform of the variable u along the x-direction
-        ready for the power spectrum method.
-        Parameters
-        ----------
-        u : ndarray
-            Two dimensional array of the variable we want the power spectrum of
-        Returns
-        -------
-        uhat : array (N,)
-            Fourier transform of u
-        """
-        NN = nx // 2
-        uhat = np.zeros((NN, ny), dtype=np.complex_)
-    
-        for k in range(NN):
-            for y in range(ny):
-                # Sum over all x adding to uhat
-                for i in range(nx):
-                    uhat[k, y] += u[i, y] * np.exp(-(2*np.pi*1j*k*i)/nx)
-        return uhat / nx        
-
-    def getPowerSpectrumSq(u, nx, ny, dy):
+    def getPowerSpectrumSq(u, points):
         """
         Returns the integrated power spectrum of the variable u, up to the Nyquist frequency = nx/2
         Parameters
@@ -249,31 +238,45 @@ class CoefficientAnalysis(object):
         u : ndarray
             Two dimensional array of the variable we want the power spectrum of
         """
+        nx = points[1].shape[0]
+        ny = points[2].shape[0]
+        dx = points[1][1] - points[1][0]
+        dy = points[2][1] - points[2][0]
+
+        uhat_x, uhat_y = Base.getFourierTrans(u, nx, ny)
+
         NN = nx // 2
-        uhat = getFourierTrans(u, nx, ny)
-        P = np.zeros(NN)
+        P_x = np.zeros(NN)
     
         for k in range(NN):
             for j in range(ny):
-                P[k] += (np.absolute(uhat[k, j])**2) * dy
-    
-        P = P / np.sum(P)
-        return P        
+                P_x[k] += (np.absolute(uhat_x[k, j])**2) * dy
+        P_x = P_x / np.sum(P_x)
+
+        NN = ny // 2
+        P_y = np.zeros(NN)
+
+        for k in range(NN):
+            for i in range(nx):
+                P_y[k] += (np.absolute(uhat_y[k, i])**2) * dx
+        P_y = P_y / np.sum(P_y)
+
+        return P_x, P_y      
             
-    def GetKESF(frame):
-        """
-        Retrieves and computes the kinetic energy density for each frame in a single fluid animation.
-        Parameters
-        ----------
-        """
-        vx = frame[anim.variables.index("vx\n"), 4:-4, 4:-4, 0]
-        vy = frame[anim.variables.index("vy\n"), 4:-4, 4:-4, 0]
-        rho = frame[anim.variables.index("rho\n"), 4:-4, 4:-4, 0]
-        vsq = vx**2 + vy**2
-        W = 1 / np.sqrt(1 - vsq)
-        KE = rho * W * (W-1)
+    # def GetKESF(frame):
+    #     """
+    #     Retrieves and computes the kinetic energy density for each frame in a single fluid animation.
+    #     Parameters
+    #     ----------
+    #     """
+    #     vx = frame[anim.variables.index("vx\n"), 4:-4, 4:-4, 0]
+    #     vy = frame[anim.variables.index("vy\n"), 4:-4, 4:-4, 0]
+    #     rho = frame[anim.variables.index("rho\n"), 4:-4, 4:-4, 0]
+    #     vsq = vx**2 + vy**2
+    #     W = 1 / np.sqrt(1 - vsq)
+    #     KE = rho * W * (W-1)
     
-        return KE        
+    #     return KE        
         
 
 
