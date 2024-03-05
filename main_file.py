@@ -130,6 +130,10 @@ if __name__ == '__main__':
     micro_t_to_plot = optional_config_args["MicroPlottingRanges"]["t_point"] # t_range[0]
     x_range_plotting = optional_config_args["MicroPlottingRanges"]["x_range"]
     y_range_plotting = optional_config_args["MicroPlottingRanges"]["y_range"]
+    
+    fourier_analyser = FourierAnalysis(visualizer)
+    fourier_analyser.PerformAnalysis(micro_model, micro_t_to_plot, x_range_plotting, y_range_plotting,\
+                                     method='raw_data', save_fig=True, save_dir='Output/t_2998_3002/800x1600/Figures/KESpec.pdf')
 
     """
 
