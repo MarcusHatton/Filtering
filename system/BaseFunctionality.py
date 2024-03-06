@@ -180,7 +180,7 @@ class Base(object):
             for x in range(nx):
                 # Sum over all y adding to uhat
                 for i in range(ny):
-                    uhat_y[k, x] += u[i, x] * np.exp(-(2*np.pi*1j*k*i)/ny)
+                    uhat_y[x, k] += u[x, i] * np.exp(-(2*np.pi*1j*k*i)/ny)
 
         return (uhat_x / nx), (uhat_y / ny) 
     
