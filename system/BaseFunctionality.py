@@ -150,7 +150,7 @@ class Base(object):
         #return y_data, x_data
         
     @staticmethod
-    def getFourierTrans(u, nx, ny):
+    def get1DFourierTrans(u, nx, ny):
         """
         Returns the 1D discrete fourier transform of the variable u along both 
         the x and y directions ready for the power spectrum method.
@@ -184,6 +184,55 @@ class Base(object):
 
         return (uhat_x / nx), (uhat_y / ny) 
     
+    @staticmethod
+    def getPowerSpectrumSq(self, u, nx, ny, dx, dy):
+        """
+        Returns the integrated power spectrum of the variable u, up to the Nyquist frequency = nx//2
+        Parameters
+        ----------
+        u : ndarray
+            Two dimensional array of the variable we want the power spectrum of
+        """
+
+        # lambda_xs, lambda_ys = np.zeros(nx//2), np.zeros(ny//2)
+
+        # kxs, kys = np.zeros(nx//2), np.zeros(ny//2)
+        # for i in range(nx//2,0,-1):
+        #     lambda_xs[i-1] = i*dx
+        # for j in range(ny//2,0,-1):
+        #     lambda_ys[j-1] = j*dy
+
+        # #print(dx, dy)
+        # #print(lambda_xs, lambda_ys)
+
+        # kxs = 2*np.pi*np.reciprocal(lambda_xs)
+        # kys = 2*np.pi*np.reciprocal(lambda_ys)
+
+        # ks = [kxs,kys]
+
+        #print(kxs)
+        #print(kxs.shape)
+
+        uhat_x, uhat_y = Base.getFourierTrans(u, nx, ny)
+
+        NN = nx // 2
+        P_x = np.zeros(NN)
+    
+        for k in range(NN):
+            for j in range(ny):
+                P_x[k] += (np.absolute(uhat_x[k, j])**2) * dy
+        P_x = P_x / np.sum(P_x)
+
+        NN = ny // 2
+        P_y = np.zeros(NN)
+
+        for k in range(NN):
+            for i in range(nx):
+                P_y[k] += (np.absolute(uhat_y[i, k])**2) * dx
+        P_y = P_y / np.sum(P_y)
+
+        return [P_x, P_y] #, [kxs, kys]
+          
     
     def profile(self, fnc):
         """A decorator that uses cProfile to profile a function"""

@@ -208,8 +208,14 @@ class FourierAnalysis(object):
         # Calculate the KE
         KE = rho * W * (W-1)
 
+        nx = points[1].shape[0]
+        ny = points[2].shape[0]
+        dx = points[1][1] - points[1][0]
+        dy = points[2][1] - points[2][0]
+        print(dx, dy)
+
         # Get its FT'd power spectrum
-        KESpectra, ks = self.getPowerSpectrumSq(KE, points)
+        KESpectra = Base.getPowerSpectrumSq(KE, nx, ny, dx, dy)
 
         #print(KESpectra)
         #print(ks)
@@ -223,12 +229,12 @@ class FourierAnalysis(object):
         #print(KESpectra[0].shape)
 
         # Kinetic energy density power
-        for ax, P, k in zip(axs, KESpectra, ks):
-            P = np.flip(P)
-            ax.loglog(k, P, label=r'$Single \ Fluid \ Ideal$')
+        for ax, P, k in zip(axs, KESpectra):#, ks):
+            ax.loglog(np.arange(1, nx+1), np.arange(1, nx+1)*P, label=r'$Single \ Fluid \ Ideal$')
             ax.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
             ax.set_xlabel(r'$k$')
-            ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
+            #ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
+            # ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
             #ax.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
             #ax.set_xlim([k[0],k[-1]])
             #ax.set_xlim([50,250])
@@ -241,57 +247,7 @@ class FourierAnalysis(object):
 
        
 
-    def getPowerSpectrumSq(self, u, points):
-        """
-        Returns the integrated power spectrum of the variable u, up to the Nyquist frequency = nx/2
-        Parameters
-        ----------
-        u : ndarray
-            Two dimensional array of the variable we want the power spectrum of
-        """
-        nx = points[1].shape[0]
-        ny = points[2].shape[0]
-        dx = points[1][1] - points[1][0]
-        dy = points[2][1] - points[2][0]
 
-        lambda_xs, lambda_ys = np.zeros(nx//2), np.zeros(ny//2)
-
-        kxs, kys = np.zeros(nx//2), np.zeros(ny//2)
-        for i in range(nx//2,0,-1):
-            lambda_xs[i-1] = (i)*dx
-        for j in range(ny//2,0,-1):
-            lambda_ys[j-1] = (j)*dy
-
-        #print(dx, dy)
-        #print(lambda_xs, lambda_ys)
-
-        kxs = 2*np.pi*np.reciprocal(lambda_xs)
-        kys = 2*np.pi*np.reciprocal(lambda_ys)
-
-        ks = [kxs,kys]
-
-        #print(kxs)
-        #print(kxs.shape)
-
-        uhat_x, uhat_y = Base.getFourierTrans(u, nx, ny)
-
-        NN = nx // 2
-        P_x = np.zeros(NN)
-    
-        for k in range(NN):
-            for j in range(ny):
-                P_x[k] += (np.absolute(uhat_x[k, j])**2) * dy
-        P_x = P_x / np.sum(P_x)
-
-        NN = ny // 2
-        P_y = np.zeros(NN)
-
-        for k in range(NN):
-            for i in range(nx):
-                P_y[k] += (np.absolute(uhat_y[i, k])**2) * dx
-        P_y = P_y / np.sum(P_y)
-
-        return [P_x, P_y], [kxs, kys]
             
     # def GetKESF(frame):
     #     """
