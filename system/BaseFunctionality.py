@@ -180,12 +180,12 @@ class Base(object):
             for x in range(nx):
                 # Sum over all y adding to uhat
                 for i in range(ny):
-                    uhat_y[x, k] += u[x, i] * np.exp(-(2*np.pi*1j*k*i)/ny)
+                    uhat_y[k, x] += u[x, i] * np.exp(-(2*np.pi*1j*k*i)/ny)
 
         return (uhat_x / nx), (uhat_y / ny) 
     
     @staticmethod
-    def getPowerSpectrumSq(self, u, nx, ny, dx, dy):
+    def getPowerSpectrumSq(u, nx, ny, dx, dy):
         """
         Returns the integrated power spectrum of the variable u, up to the Nyquist frequency = nx//2
         Parameters
@@ -213,7 +213,7 @@ class Base(object):
         #print(kxs)
         #print(kxs.shape)
 
-        uhat_x, uhat_y = Base.getFourierTrans(u, nx, ny)
+        uhat_x, uhat_y = Base.get1DFourierTrans(u, nx, ny)
 
         NN = nx // 2
         P_x = np.zeros(NN)
@@ -228,7 +228,7 @@ class Base(object):
 
         for k in range(NN):
             for i in range(nx):
-                P_y[k] += (np.absolute(uhat_y[i, k])**2) * dx
+                P_y[k] += (np.absolute(uhat_y[k, i])**2) * dx
         P_y = P_y / np.sum(P_y)
 
         return [P_x, P_y] #, [kxs, kys]

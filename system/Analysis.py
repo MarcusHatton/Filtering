@@ -212,7 +212,8 @@ class FourierAnalysis(object):
         ny = points[2].shape[0]
         dx = points[1][1] - points[1][0]
         dy = points[2][1] - points[2][0]
-        print(dx, dy)
+        #print(dx, dy)
+        ns = [nx, ny]
 
         # Get its FT'd power spectrum
         KESpectra = Base.getPowerSpectrumSq(KE, nx, ny, dx, dy)
@@ -229,13 +230,13 @@ class FourierAnalysis(object):
         #print(KESpectra[0].shape)
 
         # Kinetic energy density power
-        for ax, P, k in zip(axs, KESpectra):#, ks):
-            ax.loglog(np.arange(1, nx+1), np.arange(1, nx+1)*P, label=r'$Single \ Fluid \ Ideal$')
+        for ax, P, n in zip(axs, KESpectra, ns):
+            ax.loglog(np.arange(1, n//2+1), np.arange(1, n//2+1)*P, label=r'$Single \ Fluid \ Ideal$')
             ax.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
             ax.set_xlabel(r'$k$')
-            #ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
+            ax.loglog([1, n//2], [P[0], P[0]*((n//2)/(1))**(-5/3)], 'k--')
             # ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
-            #ax.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
+            ax.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
             #ax.set_xlim([k[0],k[-1]])
             #ax.set_xlim([50,250])
             ax.legend(loc='lower left')
