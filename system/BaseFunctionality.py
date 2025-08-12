@@ -202,16 +202,9 @@ class Base(object):
         # for j in range(ny//2,0,-1):
         #     lambda_ys[j-1] = j*dy
 
-        # #print(dx, dy)
-        # #print(lambda_xs, lambda_ys)
-
         # kxs = 2*np.pi*np.reciprocal(lambda_xs)
         # kys = 2*np.pi*np.reciprocal(lambda_ys)
-
         # ks = [kxs,kys]
-
-        #print(kxs)
-        #print(kxs.shape)
 
         uhat_x, uhat_y = Base.get1DFourierTrans(u, nx, ny)
 

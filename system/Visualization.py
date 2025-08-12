@@ -29,7 +29,7 @@ class Plotter_2D(object):
                          6 : (2,3)}
 
         
-    def get_var_data(self, model, var_str, t, x_range, y_range, interp_dims, method, component_indices):
+    def get_var_data(self, model, var_str, t, x_range, y_range, interp_dims=(), method='raw_data', component_indices=[()]):
         """
         Retrieves the required data from model to plot a variable defined by
         var_str over coordinates t, x_range, y_range, either from the model's
@@ -89,9 +89,6 @@ class Plotter_2D(object):
                 points = [model.domain_vars['points'][0][h],\
                           model.domain_vars['points'][1][i_s:i_f+1],\
                           model.domain_vars['points'][2][j_s:j_f+1]]
-
-                if var_str == 'pi':
-                    print(model.vars[var_str])                
 
                 data_to_plot = model.vars[var_str][h:h+1, i_s:i_f+1, j_s:j_f+1][0]#[:, :, component_indices]
                 if component_indices:

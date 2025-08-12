@@ -195,46 +195,54 @@ class FourierAnalysis(object):
         """
         self.visualizer = visualizer # need to re-structure this... or do I
 
-    def PerformAnalysis(self, model, energy_var_str, Lorentz_var_str, t, x_range, y_range, interp_dims=(0,0), 
-                         method='raw_data', component_indices=[()], save_fig=False, save_dir=''):
+    def GetKESF(self, vx, vy, rho):
+        """
+        Retrieves and computes the kinetic energy density for each frame in a single fluid animation.
+        Parameters
+        ----------
+        """
+        vsq = vx**2 + vy**2
+        W = 1 / np.sqrt(1 - vsq)
+        KE = rho * W * (W-1)
+        return KE
+
+    def PerformAnalysis(self, model, energy_var_str, Lorentz_var_str, t, x_range, y_range, 
+                        component_indices=(), save_fig=False, save_dir=''):
 
         # Gather relevant data for KE power spectrum
-        W, points = self.visualizer.get_var_data(model, Lorentz_var_str, t, x_range, y_range, interp_dims, method, component_indices)
-        # U0, points = self.visualizer.get_var_data(model, 'U', t, x_range, y_range, interp_dims, method, component_indices=(0,))
-        rho, points = self.visualizer.get_var_data(model, energy_var_str, t, x_range, y_range, interp_dims, method, component_indices)
+        W, points = self.visualizer.get_var_data(model, Lorentz_var_str, t=t, x_range=x_range, y_range=y_range, component_indices=component_indices)
+        #vx, points = self.visualizer.get_var_data(model,'v1', t=t, x_range=x_range, y_range=y_range, component_indices=component_indices)
+        #vy, points = self.visualizer.get_var_data(model, 'v2', t=t, x_range=x_range, y_range=y_range, component_indices=component_indices)
+        # U0, points = self.visualizer.get_var_data(model, 'U', t, x_range, y_range, component_indices=(0,))
+        rho, points = self.visualizer.get_var_data(model, energy_var_str, t=t, x_range=x_range, y_range=y_range, component_indices=())
         
-        #print(points)
-
         # Calculate the KE
         KE = rho * W * (W-1)
-
+        #KE = self.GetKESF(vx, vy, rho)
+ 
         nx = points[1].shape[0]
         ny = points[2].shape[0]
         dx = points[1][1] - points[1][0]
         dy = points[2][1] - points[2][0]
-        #print(dx, dy)
         ns = [nx, ny]
 
         # Get its FT'd power spectrum
         KESpectra = Base.getPowerSpectrumSq(KE, nx, ny, dx, dy)
-
-        #print(KESpectra)
-        #print(ks)
     
         ### Model Power Spectrum
-        fig, axs = plt.subplots(1, 2)#, sharex=True)
-        fig.set_size_inches(6,3)
+        fig, axs = plt.subplots(1, 2, sharey=True)
+        fig.set_size_inches(6.0,3.0)
         fig.tight_layout()
-
-        #print(KESpectra[0])    
-        #print(KESpectra[0].shape)
 
         # Kinetic energy density power
         for ax, P, n in zip(axs, KESpectra, ns):
-            ax.loglog(np.arange(1, n//2+1), np.arange(1, n//2+1)*P, label=r'$Single \ Fluid \ Ideal$')
+            N = n//2
+            ax.loglog(np.arange(1, N+1), np.arange(1, N+1)*P, label=r'$Single \ Fluid \ Ideal$')
             ax.set_ylabel(r"$k|P_{T}(k)|^2$", {'fontsize':'large'})
             ax.set_xlabel(r'$k$')
-            ax.loglog([1, n//2], [P[0], P[0]*((n//2)/(1))**(-5/3)], 'k--')
+            #ax.loglog([1, N], [P[0], P[0]*(N**(-5/3))], 'k--')
+            #ax.loglog(np.arange(1, N+1), (np.arange(1, N+1)**(5/3))*P, 'k--')
+            ax.loglog(np.arange(1, N+1), (np.arange(1, N+1)**(5/3))*np.arange(1, N+1)*P, 'k--')
             # ax.loglog([k[0], k[-1]], [P[0], P[0]*(k[-1]/k[0])**(-5/3)], 'k--')
             ax.annotate(r'$k^{-5/3}$', xy=(40, 0.01), fontsize=15)
             #ax.set_xlim([k[0],k[-1]])
@@ -248,22 +256,6 @@ class FourierAnalysis(object):
 
        
 
-
-            
-    # def GetKESF(frame):
-    #     """
-    #     Retrieves and computes the kinetic energy density for each frame in a single fluid animation.
-    #     Parameters
-    #     ----------
-    #     """
-    #     vx = frame[anim.variables.index("vx\n"), 4:-4, 4:-4, 0]
-    #     vy = frame[anim.variables.index("vy\n"), 4:-4, 4:-4, 0]
-    #     rho = frame[anim.variables.index("rho\n"), 4:-4, 4:-4, 0]
-    #     vsq = vx**2 + vy**2
-    #     W = 1 / np.sqrt(1 - vsq)
-    #     KE = rho * W * (W-1)
-    
-    #     return KE        
         
 
 

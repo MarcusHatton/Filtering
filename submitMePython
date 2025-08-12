@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#SBATCH --ntasks-per-node=40
+#SBATCH --nodes=1
+#SBATCH --time=10:00:00          # walltime
+
+##module load qt/5.13.1
+
+source activate first_try
+##export QT_DEBUG_PLUGINS=1
+
+##python3 -u ./main_file.py config.txt
+##python3 ./KolmogorovAnalysisPickle.py
+python3 ./KolmogorovAnalysisPickleLoop.py

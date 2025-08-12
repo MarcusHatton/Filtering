@@ -27,7 +27,7 @@ class NonIdealHydro2D(object):
         
         #Dictionary for 'local' variables, 
         #obtained from filtering the appropriate MicroModel variables
-        self.filter_var_strs = ("BC","SET")
+        self.filter_var_strs = ("BC","SET","Rho")
         self.filter_vars = dict.fromkeys(self.filter_var_strs)
 
         #Dictionary for MesoModel variables
@@ -111,6 +111,7 @@ class NonIdealHydro2D(object):
         self.meso_vars['T~'] = np.zeros((Nt, Nx, Ny))
         self.meso_vars['N'] = np.zeros((Nt, Nx, Ny))
 
+        self.filter_vars['Rho'] = np.zeros((Nt, Nx, Ny))
         self.filter_vars['BC'] = np.zeros((Nt, Nx, Ny, n_dims))
         self.filter_vars['SET'] = np.zeros((Nt, Nx, Ny, n_dims,n_dims))
         
@@ -159,6 +160,8 @@ class NonIdealHydro2D(object):
                         self.filter_vars['BC'][h,i,j] = self.Filter.filter_var_point('BC', self.meso_vars['U_coords'][h,i,j],
                                                      self.meso_vars['U'][h,i,j])
                         self.filter_vars['SET'][h,i,j] = self.Filter.filter_var_point('SET', self.meso_vars['U_coords'][h,i,j],
+                                                     self.meso_vars['U'][h,i,j])
+                        self.filter_vars['Rho'][h,i,j] = self.Filter.filter_var_point('rho', self.meso_vars['U_coords'][h,i,j],
                                                      self.meso_vars['U'][h,i,j])
 
                         # self.filter_vars['n'][h,i,j] =\
@@ -281,9 +284,6 @@ class NonIdealHydro2D(object):
         Pi_res = tau_trace - p_tilde
         pi_res = tau_res - np.dot((p_tilde + Pi_res),h_mu_nu)
         
-        # print(Pi_res, q_res, pi_res)
-        print('HELLO HELLO')
-
         self.diss_residuals['Pi'][h,i,j] = Pi_res
         self.diss_residuals['q'][h,i,j] = q_res
         self.diss_residuals['pi'][h,i,j] = pi_res

@@ -49,16 +49,16 @@ if __name__ == '__main__':
         
     # Pickling Options    
     #LoadMicroModelFromPickleFile = optional_config_args["LoadDumpMicroMesoPickles"]["LoadMicro"]
-    LoadMicroModelFromPickleFile = True
+    LoadMicroModelFromPickleFile = False
     MicroModel = req_config_args["MicroModel"] # 'IdealHydro2D.pickle'
 
-    DumpMicroModelToPickleFile = False
+    DumpMicroModelToPickleFile = True
     #MicroModelPickleDumpFile = 'IdealHydro2D.pickle'
 
-    LoadMesoModelFromPickleFile = True
+    LoadMesoModelFromPickleFile = False
     MesoModel = req_config_args["MesoModel"] # 'NonIdealHydro2D.pickle'
     
-    DumpMesoModelToPickleFile = False
+    DumpMesoModelToPickleFile = True
     #MesoModelPickleDumpFile = 'NonIdealHydro2D.pickle'
     
     PickleDir = optional_config_args["PickleIODirectory"]
@@ -139,8 +139,7 @@ if __name__ == '__main__':
 
     fourier_analyser = FourierAnalysis(visualizer)
     fourier_analyser.PerformAnalysis(micro_model, energy_var_str='rho', Lorentz_var_str='W', t=micro_t_to_plot, x_range=x_range_plotting,\
-                                     y_range=y_range_plotting, interp_dims=(20,40),\
-                                     method='raw_data', component_indices=(), save_fig=True, save_dir=fig_save_dir+'KESpecTest.pdf')
+                                     y_range=y_range_plotting, component_indices=(), save_fig=True, save_dir=fig_save_dir+'KESpecTestMicro.pdf')
 
     """
 
@@ -161,8 +160,6 @@ if __name__ == '__main__':
                           interp_dims=(20,40), method='interpolate', components_indices=[(1,)], save_fig=True, save_dir=fig_save_dir)
 
     """
-
-    exit()
 
     # Create the observer-finder and filter
     ObsFinder = FindObs_drift_root(micro_model,box_len=0.001)
@@ -194,9 +191,14 @@ if __name__ == '__main__':
     #meso_model.filter_micro_variables()
     #meso_model.calculate_dissipative_coefficients()
 
+    fourier_analyser.PerformAnalysis(meso_model, energy_var_str='Rho', Lorentz_var_str='U', t=micro_t_to_plot, x_range=x_range_plotting,\
+                                     y_range=y_range_plotting, component_indices=(0,), save_fig=True, save_dir=fig_save_dir+'KESpecTestMeso.pdf')
+
     if DumpMesoModelToPickleFile:
         with open(PickleDir+meso_model.get_model_name()+'.pickle', 'wb') as filehandle:
             pickle.dump(meso_model, filehandle) 
+
+    exit()
 
     meso_t_to_plot = optional_config_args["MesoPlottingRanges"]["t_point"]
 
